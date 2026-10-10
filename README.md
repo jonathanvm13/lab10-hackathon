@@ -32,4 +32,4 @@ uv run uvicorn app.entrada:app --host 0.0.0.0 --port "${PORT:-8000}" --workers 1
 
 ## Despliegue
 
-Railway usa `railway.toml` en la raíz: Railpack, `uv sync --frozen --no-dev` y una sola réplica. Definí `APP_AUTH_TOKEN` en las variables del servicio. No va en el repositorio.
+Railway usa `railway.toml` en la raíz: Railpack, `uv sync --frozen --no-dev` y una sola réplica. El arranque que ejecuta Railpack está en `railpack.json`. Definí `APP_AUTH_TOKEN` en las variables del servicio. No va en el repositorio.

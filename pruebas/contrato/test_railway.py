@@ -1,5 +1,6 @@
-"""Pruebas de contrato de `railway.toml`."""
+"""Pruebas de contrato de `railway.toml` y `railpack.json`."""
 
+import json
 import re
 import tomllib
 from pathlib import Path
@@ -43,3 +44,14 @@ def test_railway_sin_secreto_ni_asignacion_de_token() -> None:
 
 def test_railway_sin_healthcheck_anonimo() -> None:
     assert "healthcheckPath" not in _texto()
+
+
+def test_railpack_arranca_igual_que_railway() -> None:
+    """Railpack lee `railpack.json`, no `railway.toml` (https://railpack.com/config/file)."""
+    cargado = json.loads((_RAIZ / "railpack.json").read_text(encoding="utf-8"))
+    deploy = cargado["deploy"]
+    assert isinstance(deploy, dict)
+    assert deploy["startCommand"] == _ARRANQUE
+    texto = json.dumps(cargado)
+    assert "APP_AUTH_TOKEN" not in texto
+    assert "Bearer " not in texto
