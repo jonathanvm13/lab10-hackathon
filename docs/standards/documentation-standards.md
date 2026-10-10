@@ -108,6 +108,7 @@ Cuándo sube la versión:
 | Nueva versión del API expuesta en `/v2/...` (en paralelo a v1) | **MAJOR** | Un contrato incompatible publicado en una ruta nueva |
 | Cambio de comportamiento compatible en las rutas existentes | **MINOR** | Un campo nuevo en una respuesta |
 | Corrección para cumplir el contrato ya documentado; corrección de docs sin cambio de contrato | **PATCH** | Un texto de error que no coincidía con el contrato |
+| Reemplazo incompatible en las rutas vigentes | Se conserva la versión local | Si el proveedor reemplaza de forma incompatible el contrato en las mismas rutas y el clon debe reflejarlo, se conserva la versión local, se actualiza el contrato y el cambio se anota bajo `[Unreleased]` con la evidencia del incidente |
 | Refactor, tests, herramientas | Sin versión (solo `[Unreleased]` si aporta) | — |
 
 ## 6. Cómo citar evidencia

@@ -1,4 +1,4 @@
-"""Replay en proceso de `docs/architecture/experimentos.jsonl`."""
+"""Replay en proceso de la tarde en `docs/architecture/incidente-experimentos.jsonl`."""
 
 import json
 import re
@@ -11,11 +11,12 @@ from app.estado import reset
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-_LOG = Path("docs/architecture/experimentos.jsonl")
+_LOG = Path("docs/architecture/incidente-experimentos.jsonl")
 _PREFIJO = re.compile(r"^\[([A-Z]+) (\S+)(.*?)]")
 _HEADER_EXTRA = re.compile(r"\+ header\s+([^:]+):\s*(.+)$")
 _LIMITE_SEGUNDOS = 5.0
-_EXCLUIDA = "c2"
+_ID_DESDE = 93
+_ID_HASTA = 346
 
 
 def test_replay_log_coincide_status_y_cuerpo(app: FastAPI, token_prueba: str) -> None:
@@ -42,9 +43,10 @@ def test_replay_log_coincide_status_y_cuerpo(app: FastAPI, token_prueba: str) ->
 def test_replay_incluye_secuencia_sin_reset() -> None:
     nombres = [nombre for nombre, _ in _secuencias()]
 
-    assert "adv-a5" in nombres
-    assert "c2" not in nombres
-    assert "c2b" in nombres
+    assert _LOG.name == "incidente-experimentos.jsonl"
+    assert "humo-1601-h1" in nombres
+    assert "humo-1534-h1" not in nombres
+    assert "humo-1536-h1" not in nombres
 
 
 def _secuencias() -> list[tuple[str, list[dict[str, object]]]]:
@@ -56,8 +58,14 @@ def _secuencias() -> list[tuple[str, list[dict[str, object]]]]:
         valor = json.loads(texto)
         if not isinstance(valor, dict):
             continue
+        identificador = valor.get("id")
         seq = valor["seq"]
-        if not isinstance(seq, str) or seq == _EXCLUIDA:
+        if (
+            not isinstance(identificador, int)
+            or identificador < _ID_DESDE
+            or identificador > _ID_HASTA
+            or not isinstance(seq, str)
+        ):
             continue
         if seq not in grupos:
             grupos[seq] = []

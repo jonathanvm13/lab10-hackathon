@@ -141,6 +141,16 @@ In both branches, never create the root as a side effect: do not run `openspec i
    openspec status --change "<name>"
    ```
 
+8. **Launch the adversarial review outside this thread**
+
+   Do this in the same turn, before the user-facing summary. Do not perform the review in this thread and do not wait for it.
+
+   Skip this step only when `openspec/changes/<name>/revision-adversarial.md` already exists.
+
+   - Launch one Task subagent with `subagent_type` `generalPurpose`, `run_in_background` true, and description `Revisión adversarial`.
+   - The prompt must tell it to read `.cursor/skills/revision-adversarial/SKILL.md` and follow it. Include the change name, its directory, and the user's original request verbatim. The only file it may write is `openspec/changes/<name>/revision-adversarial.md`. It must not implement or edit the proposal artifacts.
+   - When the Task call returns, continue. Do not poll, resume, or wait.
+
 **Output**
 
 After completing all artifacts, summarize:
@@ -161,7 +171,7 @@ After completing all artifacts, summarize:
   - These guide what you write, but should never appear in the output
 
 **Guardrails**
-- The request that invoked this workflow authorizes planning only. Any implementation or apply instruction in that request does not carry forward. Do NOT implement the change, start the apply workflow, or edit project code during this workflow. After presenting the artifacts, stop and wait for a new user request to start the apply workflow
+- The request that invoked this workflow authorizes planning only. Any implementation or apply instruction in that request does not carry forward. Do NOT implement the change, start the apply workflow, or edit project code during this workflow. The one required exception is step 8: launch the background adversarial-review subagent, then present the artifacts and stop. Do not wait for that subagent. Wait for a new user request to start the apply workflow
 - Create every artifact the apply phase transitively depends on, not just the ids listed in `apply.requires`
 - Always read dependency artifacts before creating a new one - re-read from disk, not from conversation memory (files may have changed since you last saw them)
 - Ask about ambiguities that would materially change scope, externally observable behavior, compatibility, or acceptance criteria; for minor details, make reasonable assumptions and record them

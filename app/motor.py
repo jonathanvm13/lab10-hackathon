@@ -5,11 +5,30 @@
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from typing import Final
 
 from app.catalogo import CodigoError
 from app.configuracion import LIMITE_TRANSFER, STRIKES_PARA_BLOQUEO
 from app.errores import ErrorDominio, ValorCampo
 from app.estado import Estado
+
+_CENTAVOS_POR_UNIDAD: Final[int] = 100
+
+
+def formatear_saldo(entero: int) -> str:
+    """Formatea el saldo entero como string con dos decimales.
+
+    Usa división entera. El signo ``-`` aparece solo si el entero es negativo.
+
+    Args:
+        entero: Saldo interno de la cuenta, en centavos.
+
+    Returns:
+        Texto con exactamente dos decimales, sin separador de miles.
+    """
+    signo = "-" if entero < 0 else ""
+    unidades, centavos = divmod(abs(entero), _CENTAVOS_POR_UNIDAD)
+    return f"{signo}{unidades}.{centavos:02d}"
 
 
 @dataclass(frozen=True, slots=True)
@@ -51,7 +70,7 @@ def validar_halt_u_operacion(estado: Estado, comando: str, args: list[str]) -> N
         ErrorDominio: `E520` en `HALT`, o `E402` si la operación no existe.
     """
     if comando == "HALT":
-        # No altera cuentas, saldos, operaciones ni strikes (spec HALT).
+        # No altera cuentas, saldos, operaciones, strikes ni intentos (spec HALT).
         raise ErrorDominio(CodigoError.E520, paso="halt_u_operacion")
     if comando == "ANULA" and estado.obtener_operacion(args[0]) is None:
         raise ErrorDominio(CodigoError.E402, paso="halt_u_operacion")
@@ -66,14 +85,19 @@ def validar_bloqueo(estado: Estado, comando: str, args: list[str]) -> None:
         args: Argumentos sin el control.
 
     Raises:
-        ErrorDominio: `E510` sin ejecutar la transferencia ni sumar otro strike.
+        ErrorDominio: `E510` con `intentos`, sin ejecutar la transferencia ni sumar otro strike.
     """
     if comando == "TRANSFER" and estado.strikes_de(args[0]) >= STRIKES_PARA_BLOQUEO:
-        raise ErrorDominio(CodigoError.E510, paso="bloqueo")
+        intentos = estado.registrar_intento_bloqueo(args[0])
+        raise ErrorDominio(
+            CodigoError.E510,
+            paso="bloqueo",
+            campos={"intentos": intentos},
+        )
 
 
 def validar_limite(estado: Estado, comando: str, args: list[str], monto: int) -> None:
-    """Rechaza una transferencia por encima de 100000 y suma un strike.
+    """Rechaza una transferencia por encima de 50000 y suma un strike.
 
     Args:
         estado: Estado del proceso.
@@ -141,7 +165,7 @@ def _consulta(estado: Estado, args: list[str], _monto: int) -> Resultado:
     cuenta = args[0]
     return Resultado(
         CodigoError.OK_CONSULTA,
-        {"cuenta_id": cuenta, "saldo": estado.saldo_de(cuenta)},
+        {"cuenta_id": cuenta, "saldo": formatear_saldo(estado.saldo_de(cuenta))},
     )
 
 

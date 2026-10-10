@@ -70,7 +70,7 @@ CATALOGO: Mapping[CodigoError, Respuesta] = MappingProxyType(
         CodigoError.OK: _json(200, {"ok": True}),
         CodigoError.OK_PING: _json(200, {"pong": True}),
         CodigoError.OK_ALTA: _json(201, {"cuentaId": "AC-0001"}),
-        CodigoError.OK_CONSULTA: _json(200, {"cuenta_id": "AC-0001", "saldo": 0}),
+        CodigoError.OK_CONSULTA: _json(200, {"cuenta_id": "AC-0001", "saldo": "0.00"}),
         # Texto literal del contrato; no corregir (openapi.yml OperacionRecibida).
         CodigoError.OK_DEPOSITO: _json(
             200,
@@ -107,7 +107,10 @@ CATALOGO: Mapping[CodigoError, Respuesta] = MappingProxyType(
                 "mensaje": ("operación destructiva: detiene el servicio; reenvía con confirmación"),
             },
         ),
-        CodigoError.E510: _json(409, {"error": "E510", "mensaje": "cuenta bloqueada"}),
+        CodigoError.E510: _json(
+            423,
+            {"error": "E510", "mensaje": "cuenta bloqueada", "intentos": 1},
+        ),
         CodigoError.E506: _json(422, {"error": "E506", "mensaje": "límite excedido"}),
         CodigoError.E507: _json(422, {"error": "E507", "mensaje": "saldo insuficiente"}),
         CodigoError.E500: Respuesta(500, "Internal Server Error"),

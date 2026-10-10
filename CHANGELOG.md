@@ -9,6 +9,9 @@ y este proyecto adhiere a [Versionado semántico](https://semver.org/lang/es/).
 
 ### Changed
 
+- `CONSULTA` devuelve `saldo` como string: entero interno / 100, con dos decimales (`docs/architecture/INCIDENT.md`).
+- El tope por operación de `TRANSFER` pasa a `50000` inclusive (`docs/architecture/INCIDENT.md`).
+- `E510` responde `423` con `intentos` (`docs/architecture/INCIDENT.md`).
 - El README describe el entorno Python 3.13, la instalación de uv y las dependencias en `pyproject.toml` y `uv.lock`.
 
 ### Fixed

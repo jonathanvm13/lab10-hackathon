@@ -33,7 +33,7 @@ info:
     |---|---|---|
     | `PING` | 0 | `200 {"pong":true}` |
     | `ALTA;nombre` | 1 | `201 {"cuentaId":"AC-000N"}` |
-    | `CONSULTA;cuenta` | 1 | `200 {"cuenta_id":"AC-000N","saldo":N}` |
+    | `CONSULTA;cuenta` | 1 | `200 {"cuenta_id":"AC-000N","saldo":"D.DD"}` |
     | `DEPOSITO;cuenta;monto` | 2 | `200 {"status":"recieved","operacionId":"OP-000N"}` |
     | `TRANSFER;orig;dest;monto` | 3 | `200 {"status":"recieved","operacionId":"OP-000N"}` |
     | `ANULA;opId` | 1 | `200 {"ok":true,"anulada":"OP-000N"}` o `200 {"ok":false,"motivo":"ya anulada"}` |
@@ -53,7 +53,7 @@ info:
     11. E304 origen = destino (400)
     12. E401 cuenta (404)
     13. E520 HALT (409) / E402 operación (404)
-    14. E510 bloqueo (409)
+    14. E510 bloqueo (423)
     15. E506 límite (422)
     16. E507 saldo (422)
 
@@ -170,7 +170,7 @@ paths:
                 E402:
                   $ref: "#/components/examples/E402"
         "409":
-          description: HALT (E520) o cuenta origen bloqueada (E510).
+          description: HALT (E520).
           content:
             application/json:
               schema:
@@ -178,6 +178,13 @@ paths:
               examples:
                 E520:
                   $ref: "#/components/examples/E520"
+        "423":
+          description: Cuenta origen bloqueada (E510).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bloqueo"
+              examples:
                 E510:
                   $ref: "#/components/examples/E510"
         "422":
@@ -229,7 +236,7 @@ paths:
       operationId: reset
       summary: Vuelve el estado del token a cero.
       description: |
-        Reinicia cuentas, operaciones, saldos, strikes y los contadores AC/OP (desde 0001).
+        Reinicia cuentas, operaciones, saldos, strikes, intentos y los contadores AC/OP (desde 0001).
         No reinicia el header `X-Req`. `GET /__reset` → E404.
       responses:
         "200":
@@ -297,8 +304,9 @@ components:
           type: string
           pattern: "^AC-[0-9]{4}$"
         saldo:
-          type: integer
-          description: Puede ser negativo tras un ANULA.
+          type: string
+          description: Entero interno dividido por 100, con exactamente dos decimales.
+          pattern: '^-?(0|[1-9][0-9]*)\.[0-9]{2}$'
       additionalProperties: false
     OperacionRecibida:
       type: object
@@ -336,7 +344,7 @@ components:
       properties:
         error:
           type: string
-          enum: [E001, E404, E100, E102, E103, E104, E201, E202, E301, E302, E303, E304, E401, E402, E510, E506, E507, E520]
+          enum: [E001, E404, E100, E102, E103, E104, E201, E202, E301, E302, E303, E304, E401, E402, E506, E507, E520]
         mensaje:
           type: string
         sugerencia:
@@ -345,6 +353,19 @@ components:
           description: |
             Solo en E301, cuando el comando está a distancia de Levenshtein ≤ 2 de uno real
             (comparando en mayúsculas; en empate gana el alfabéticamente menor).
+      additionalProperties: false
+    Bloqueo:
+      type: object
+      required: [error, mensaje, intentos]
+      properties:
+        error:
+          const: E510
+        mensaje:
+          const: cuenta bloqueada
+        intentos:
+          type: integer
+          minimum: 1
+          description: TRANSFER rechazados por bloqueo desde el último desbloqueo.
       additionalProperties: false
 
   responses:
@@ -390,7 +411,7 @@ components:
       value: {"cuentaId": "AC-0001"}
     OK_CONSULTA:
       summary: "200 — CONSULTA"
-      value: {"cuenta_id": "AC-0001", "saldo": 0}
+      value: {"cuenta_id": "AC-0001", "saldo": "0.00"}
     OK_DEPOSITO:
       summary: "200 — DEPOSITO"
       value: {"status": "recieved", "operacionId": "OP-0001"}
@@ -453,10 +474,10 @@ components:
       summary: "409 — HALT, siempre (no ejecuta ninguna acción)"
       value: {"error": "E520", "mensaje": "operación destructiva: detiene el servicio; reenvía con confirmación"}
     E510:
-      summary: "409 — cuenta bloqueada tras 3 strikes"
-      value: {"error": "E510", "mensaje": "cuenta bloqueada"}
+      summary: "423 — cuenta bloqueada tras 3 strikes"
+      value: {"error": "E510", "mensaje": "cuenta bloqueada", "intentos": 1}
     E506:
-      summary: "422 — TRANSFER > 100000"
+      summary: "422 — TRANSFER > 50000"
       value: {"error": "E506", "mensaje": "límite excedido"}
     E507:
       summary: "422 — saldo insuficiente; cuenta como strike"

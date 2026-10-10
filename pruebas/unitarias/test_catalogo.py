@@ -1,5 +1,6 @@
 """Pruebas del catálogo contra los ejemplos del contrato."""
 
+from collections.abc import Mapping
 from pathlib import Path
 
 import yaml
@@ -21,3 +22,12 @@ def test_catalogo_cuerpos_igual_examples_coinciden() -> None:
     ejemplos = _ejemplos()
     for codigo, respuesta in CATALOGO.items():
         assert respuesta.cuerpo == ejemplos[codigo.value]
+
+
+def test_catalogo_e510_status_423_termina_en_intentos() -> None:
+    respuesta = CATALOGO[CodigoError.E510]
+    cuerpo = respuesta.cuerpo
+
+    assert respuesta.status == 423
+    assert isinstance(cuerpo, Mapping)
+    assert list(cuerpo.items())[-1] == ("intentos", 1)

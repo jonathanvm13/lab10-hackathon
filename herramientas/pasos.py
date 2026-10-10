@@ -178,12 +178,18 @@ def main() -> int:
             422,
             {"error": "E506", "mensaje": "límite excedido"},
         )
-    _msg("bloqueo", "TRANSFER;AC-0001;AC-0002;1", token, 409, {"error": "E510", "mensaje": "cuenta bloqueada"})
+    _msg(
+        "bloqueo",
+        "TRANSFER;AC-0001;AC-0002;1",
+        token,
+        423,
+        {"error": "E510", "mensaje": "cuenta bloqueada", "intentos": 1},
+    )
 
     _http("reset", "POST", "/__reset", None, token, 200, {"ok": True})
     _msg("ejecutar", "PING;0", token, 200, {"pong": True}, firmar=False)
     _msg("ejecutar", "ALTA;A", token, 201, {"cuentaId": "AC-0001"})
-    _msg("ejecutar", "CONSULTA;AC-0001", token, 200, {"cuenta_id": "AC-0001", "saldo": 0})
+    _msg("ejecutar", "CONSULTA;AC-0001", token, 200, {"cuenta_id": "AC-0001", "saldo": "0.00"})
     _msg("ejecutar", "DEPOSITO;AC-0001;250", token, 200, {"status": "recieved", "operacionId": "OP-0001"})
     _msg("ejecutar", "ALTA;B", token, 201, {"cuentaId": "AC-0002"})
     _msg(

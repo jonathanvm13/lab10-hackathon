@@ -72,7 +72,7 @@ El sistema recibe mensajes de texto de un mini banco (`COMANDO;args;control`) y 
 |---|---|---|---|
 | C1 | Orden de los errores | Hay 16 validaciones y gana la primera; un orden distinto cambia el error | Pipeline en el orden observado, configurable (D13) |
 | C2 | Dígito de control | La fórmula no era evidente; los caracteres no ASCII y los ceros a la izquierda tienen trampas | ISO 7064 MOD 97-10 solo sobre letras y dígitos ASCII; el control se compara como texto (H-I4, H-I5) |
-| C3 | Bloqueo por strikes | Es estado oculto: 3 TRANSFER rechazados (E506/E507) bloquean desde el cuarto intento; un DEPOSITO exitoso a la propia cuenta desbloquea, uno a otra cuenta no | Contador por cuenta en el estado (H-M5) |
+| C3 | Bloqueo por strikes | Es estado oculto: 3 TRANSFER rechazados (E506/E507) bloquean desde el cuarto intento con `423` e `intentos`; un DEPOSITO exitoso a la propia cuenta desbloquea y reinicia `intentos`, uno a otra cuenta no | Contador de strikes e `intentos` por cuenta; el rechazo responde `423` (H-M5) |
 | C4 | `sugerencia` en E301 | Aparece solo a veces | Levenshtein ≤ 2; empate → alfabético (D22) |
 | C5 | Texto exacto | Hay rarezas: `"recieved"`, espacio final en E301, `cuentaId` vs `cuenta_id` | Catálogo único de cuerpos copiados del log (D12) |
 | C6 | Respuestas por defecto del framework | FastAPI responde por su cuenta 404 `{"detail":...}` y 422 de validación | Manejadores propios para toda ruta y error |
@@ -119,7 +119,7 @@ Diagramas: ver [`arquitectura.md`](arquitectura.md).
 | Entrypoint | Recibe todas las rutas y métodos; `/health`, `/__reset`, `/msg`; el resto → E404 | FastAPI (preferencia del equipo: más experiencia → más velocidad para implementar y cambiar; ver D1) |
 | Pipeline de validación | Aplica las 16 validaciones en orden; la primera que falla responde | Python, orden en config |
 | Motor de comandos | Ejecuta PING, ALTA, CONSULTA, DEPOSITO, TRANSFER, ANULA y HALT | Python |
-| Estado en memoria | Cuentas, saldos, operaciones, contadores AC/OP y strikes | Diccionario en el proceso |
+| Estado en memoria | Cuentas, saldos, operaciones, contadores AC/OP, strikes e `intentos` del bloqueo `423` | Diccionario en el proceso |
 | Validador de control | Calcula y compara el dígito de control. Parámetros en config: qué caracteres cuentan y cómo, fórmula (módulo, constantes), comparación (texto/número) y comandos exentos | Python, parámetros en config |
 | Catálogo de respuestas | Status + cuerpo exacto de cada error y respuesta OK | Tabla en config |
 | Logs | Un registro por request: método, ruta, cuerpo, status, respuesta y paso del pipeline, **sin el header `Authorization`**. Sirve para depurar | stdout JSON (logs de Railway) |

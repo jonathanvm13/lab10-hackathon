@@ -1,4 +1,4 @@
-"""Cuentas, saldos, operaciones, strikes y correlativos del proceso.
+"""Cuentas, saldos, operaciones, strikes, intentos y correlativos del proceso.
 
 Un solo objeto por proceso. `reset` lo devuelve al estado inicial.
 """
@@ -10,11 +10,12 @@ from app.configuracion import ANCHO_CORRELATIVO
 
 @dataclass(slots=True)
 class Cuenta:
-    """Cuenta en memoria, con saldo y strikes de transferencia."""
+    """Cuenta en memoria, con saldo, strikes e intentos de bloqueo."""
 
     identificador: str
     saldo: int
     strikes: int = 0
+    intentos: int = 0
 
 
 @dataclass(slots=True)
@@ -43,7 +44,7 @@ class Estado:
         self.siguiente_operacion = 1
 
     def reset(self) -> None:
-        """Borra cuentas, operaciones y strikes, y reinicia los correlativos."""
+        """Borra cuentas, operaciones, strikes e intentos, y reinicia los correlativos."""
         self.cuentas = {}
         self.operaciones = {}
         self.siguiente_cuenta = 1
@@ -82,6 +83,19 @@ class Estado:
         """
         return self.cuentas[identificador].strikes
 
+    def registrar_intento_bloqueo(self, identificador: str) -> int:
+        """Incrementa los rechazos por bloqueo de la cuenta origen.
+
+        Args:
+            identificador: Cuenta origen que ya acumuló tres strikes.
+
+        Returns:
+            Intentos del episodio, empezando en 1.
+        """
+        cuenta = self.cuentas[identificador]
+        cuenta.intentos += 1
+        return cuenta.intentos
+
     def sumar_strike(self, identificador: str) -> None:
         """Suma un strike a la cuenta origen.
 
@@ -102,7 +116,7 @@ class Estado:
         return identificador
 
     def depositar(self, identificador: str, monto: int) -> str:
-        """Suma un depósito y reinicia los strikes de esa cuenta.
+        """Suma un depósito y reinicia los strikes e intentos de esa cuenta.
 
         Args:
             identificador: Cuenta que recibe el depósito.
@@ -111,12 +125,14 @@ class Estado:
         Returns:
             Id `OP-NNNN` de la operación.
         """
-        self.cuentas[identificador].saldo += monto
-        self.cuentas[identificador].strikes = 0
+        cuenta = self.cuentas[identificador]
+        cuenta.saldo += monto
+        cuenta.strikes = 0
+        cuenta.intentos = 0
         return self._registrar("DEPOSITO", monto, identificador, None)
 
     def transferir(self, origen: str, destino: str, monto: int) -> str:
-        """Mueve un monto y reinicia los strikes del origen.
+        """Mueve un monto y reinicia los strikes e intentos del origen.
 
         Args:
             origen: Cuenta que entrega el monto.
@@ -129,6 +145,7 @@ class Estado:
         self.cuentas[origen].saldo -= monto
         self.cuentas[destino].saldo += monto
         self.cuentas[origen].strikes = 0
+        self.cuentas[origen].intentos = 0
         return self._registrar("TRANSFER", monto, origen, destino)
 
     def obtener_operacion(self, identificador: str) -> Operacion | None:

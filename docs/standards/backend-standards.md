@@ -83,6 +83,7 @@ dev = [
 | MAJOR | Solo cuando se expone una ruta nueva (`/v2/...`) |
 | MINOR | Cambio de comportamiento compatible en las rutas existentes |
 | PATCH | Correcciones para cumplir el contrato ya documentado |
+| Excepción | Si el proveedor reemplaza de forma incompatible el contrato en las mismas rutas y el clon debe reflejarlo, se conserva la versión local, se actualiza el contrato y el cambio se anota bajo `[Unreleased]` con la evidencia del incidente |
 
 ## 3. Autorización
 
