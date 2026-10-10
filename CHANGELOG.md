@@ -7,6 +7,10 @@ y este proyecto adhiere a [Versionado semántico](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+### Changed
+
+- El README describe el entorno Python 3.13, la instalación de uv y las dependencias en `pyproject.toml` y `uv.lock`.
+
 ### Fixed
 
 - Railpack encuentra el arranque en `railpack.json` (`https://railpack.com/config/file`).
