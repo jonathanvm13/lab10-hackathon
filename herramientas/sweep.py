@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 S = os.path.dirname(os.path.abspath(__file__))
 TOKEN_FILE = os.environ.get("CAJA_TOKEN_FILE", os.path.expanduser("~/.config/caja-negra/token"))
 BASE = "https://caja-negra-production-c64f.up.railway.app"
-LOG = os.environ.get("CAJA_LOG_FILE") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "docs", "architecture", "experimentos.jsonl")
+LOG = os.environ.get("CAJA_LOG_FILE") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "docs", "pruebas", "experimentos.jsonl")
 TOKEN = open(TOKEN_FILE).read().strip()
 lock = threading.Lock(); rl = threading.Lock(); last = [0.0]
 def call(m, seq, hip):

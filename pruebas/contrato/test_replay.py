@@ -1,4 +1,4 @@
-"""Replay en proceso de la tarde en `docs/architecture/incidente-experimentos.jsonl`."""
+"""Replay en proceso de la tarde en `docs/pruebas/incidente-experimentos.jsonl`."""
 
 import json
 import re
@@ -11,7 +11,7 @@ from app.estado import reset
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-_LOG = Path("docs/architecture/incidente-experimentos.jsonl")
+_LOG = Path("docs/pruebas/incidente-experimentos.jsonl")
 _PREFIJO = re.compile(r"^\[([A-Z]+) (\S+)(.*?)]")
 _HEADER_EXTRA = re.compile(r"\+ header\s+([^:]+):\s*(.+)$")
 _LIMITE_SEGUNDOS = 5.0

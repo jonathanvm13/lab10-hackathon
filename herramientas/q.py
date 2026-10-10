@@ -3,7 +3,7 @@ import sys, json, time, urllib.request, urllib.error, os
 S = os.path.dirname(os.path.abspath(__file__))
 TOKEN_FILE = os.environ.get("CAJA_TOKEN_FILE", os.path.expanduser("~/.config/caja-negra/token"))
 BASE = "https://caja-negra-production-c64f.up.railway.app"
-LOG = os.environ.get("CAJA_LOG_FILE") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "docs", "architecture", "experimentos.jsonl")
+LOG = os.environ.get("CAJA_LOG_FILE") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "docs", "pruebas", "experimentos.jsonl")
 args = [a for a in sys.argv[1:] if not a.startswith("--")]
 flags = [a for a in sys.argv[1:] if a.startswith("--")]
 seq, hip, body = args[0], args[1], args[2]

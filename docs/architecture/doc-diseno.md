@@ -2,7 +2,7 @@
 
 > **Equipo:** Jonathan Vallejo Munoz · **Reto elegido:** 2 · **Versión:** entrega 12:00
 
-> Las líneas `🔎 EV` son evidencia temporal para revisión; se borran antes de entregar. «log N» = línea N de `experimentos.jsonl`; «H-xx» = `hallazgo.md`; «Dxx» = `tech-decisions.md`.
+> Las líneas `🔎 EV` son evidencia temporal para revisión; se borran antes de entregar. «log N» = línea N de `docs/pruebas/experimentos.jsonl`; «H-xx» = `docs/pruebas/hallazgo.md`; «Dxx» = `tech-decisions.md`.
 
 ---
 

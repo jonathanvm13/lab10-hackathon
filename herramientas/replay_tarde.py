@@ -21,7 +21,7 @@ from pathlib import Path
 from time import perf_counter
 
 _RAIZ = Path(__file__).resolve().parents[1]
-_LOG = _RAIZ / "docs" / "architecture" / "incidente-experimentos.jsonl"
+_LOG = _RAIZ / "docs" / "pruebas" / "incidente-experimentos.jsonl"
 _ID_DESDE = 93
 _ID_HASTA = 346
 _LIMITE_SEGUNDOS = 5.0

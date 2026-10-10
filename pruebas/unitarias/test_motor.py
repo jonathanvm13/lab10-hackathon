@@ -99,7 +99,7 @@ def test_motor_halt_sin_argumentos_responde_e302() -> None:
     assert exc.value.codigo is CodigoError.E302
 
 
-# Cada id cita docs/architecture/INCIDENT.md, salvo "-0.01": fórmula entero/100 del delta.
+# Cada id cita docs/pruebas/INCIDENT.md, salvo "-0.01": fórmula entero/100 del delta.
 @pytest.mark.parametrize(
     ("pasos", "esperado"),
     [
@@ -149,7 +149,7 @@ def test_motor_consulta_formatea_saldo_string(pasos: list[str], esperado: str) -
 
 
 def test_motor_limite_transfer_50000_acepta() -> None:
-    # inc 212 (docs/architecture/INCIDENT.md).
+    # inc 212 (docs/pruebas/INCIDENT.md).
     _dos_cuentas()
     procesar(firmar("DEPOSITO;AC-0001;50000"))
 
@@ -159,7 +159,7 @@ def test_motor_limite_transfer_50000_acepta() -> None:
 
 
 def test_motor_limite_transfer_50001_responde_e506_y_suma_strike() -> None:
-    # inc 213 (docs/architecture/INCIDENT.md).
+    # inc 213 (docs/pruebas/INCIDENT.md).
     _dos_cuentas()
     procesar(firmar("DEPOSITO;AC-0001;50001"))
 
@@ -199,7 +199,7 @@ def test_motor_limite_transfer_deposito_sobre_tope_acepta(monto: int) -> None:
 
 
 def test_motor_limite_transfer_rechazado_no_crea_op_0002() -> None:
-    # inc 124, 125, 127 y 128 (docs/architecture/INCIDENT.md).
+    # inc 124, 125, 127 y 128 (docs/pruebas/INCIDENT.md).
     _dos_cuentas()
     procesar(firmar("DEPOSITO;AC-0001;500000"))
 
@@ -221,7 +221,7 @@ def test_motor_limite_transfer_rechazado_no_crea_op_0002() -> None:
 
 
 def test_motor_e510_intentos_suben_1_2_y_3() -> None:
-    # inc 225-227 (docs/architecture/INCIDENT.md).
+    # inc 225-227 (docs/pruebas/INCIDENT.md).
     _dos_cuentas()
     _tres_rechazos(120000, CodigoError.E506)
 
@@ -233,7 +233,7 @@ def test_motor_e510_intentos_suben_1_2_y_3() -> None:
 
 
 def test_motor_deposito_propio_reinicia_intentos() -> None:
-    # inc 235 (docs/architecture/INCIDENT.md).
+    # inc 235 (docs/pruebas/INCIDENT.md).
     _dos_cuentas()
     _tres_rechazos(120000, CodigoError.E506)
     with pytest.raises(ErrorDominio):
@@ -249,7 +249,7 @@ def test_motor_deposito_propio_reinicia_intentos() -> None:
 
 
 def test_motor_tres_e507_cuarto_transfer_responde_e510_intentos() -> None:
-    # inc 243-246 (docs/architecture/INCIDENT.md).
+    # inc 243-246 (docs/pruebas/INCIDENT.md).
     _dos_cuentas()
     _tres_rechazos(1, CodigoError.E507)
 
@@ -261,7 +261,7 @@ def test_motor_tres_e507_cuarto_transfer_responde_e510_intentos() -> None:
 
 
 def test_motor_anula_no_desbloquea_siguiente_intentos() -> None:
-    # inc 247-248 (docs/architecture/INCIDENT.md).
+    # inc 247-248 (docs/pruebas/INCIDENT.md).
     _dos_cuentas()
     procesar(firmar("DEPOSITO;AC-0001;100"))
     _tres_rechazos(120000, CodigoError.E506)
@@ -280,7 +280,7 @@ def test_motor_anula_no_desbloquea_siguiente_intentos() -> None:
 
 
 def test_motor_consulta_y_transfer_inverso_no_responden_e510() -> None:
-    # inc 228 y 229 (docs/architecture/INCIDENT.md).
+    # inc 228 y 229 (docs/pruebas/INCIDENT.md).
     _dos_cuentas()
     procesar(firmar("DEPOSITO;AC-0002;10"))
     _tres_rechazos(120000, CodigoError.E506)
@@ -296,7 +296,7 @@ def test_motor_consulta_y_transfer_inverso_no_responden_e510() -> None:
 
 
 def test_motor_dos_strikes_transfer_40000_acepta_y_reinicia_intentos() -> None:
-    # inc 221-225 (docs/architecture/INCIDENT.md).
+    # inc 221-225 (docs/pruebas/INCIDENT.md).
     _dos_cuentas()
     procesar(firmar("DEPOSITO;AC-0001;40000"))
     _rechazos(2, 120000, CodigoError.E506)

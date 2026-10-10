@@ -19,7 +19,7 @@ BASE_URL = "https://caja-negra-production-c64f.up.railway.app"
 HERE = os.path.dirname(os.path.abspath(__file__))
 CASES_PATH = os.path.join(HERE, "humo.jsonl")
 BASE_PATH = os.path.join(HERE, "humo-base.json")
-LOG_PATH = os.environ.get("CAJA_LOG_FILE") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "docs", "architecture", "experimentos.jsonl")
+LOG_PATH = os.environ.get("CAJA_LOG_FILE") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "docs", "pruebas", "experimentos.jsonl")
 DEFAULT_TOKEN_FILE = os.path.expanduser("~/.config/caja-negra/token")
 INVALID_TOKEN = "token-invalido-para-pruebas-0000"
 MIN_INTERVAL = 0.21          # <= 5 req/s
