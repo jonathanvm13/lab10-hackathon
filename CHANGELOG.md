@@ -1,0 +1,15 @@
+# Changelog
+
+Todos los cambios notables de este proyecto se documentan en este archivo.
+
+El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
+y este proyecto adhiere a [Versionado semántico](https://semver.org/lang/es/).
+
+## [Unreleased]
+
+## [1.0.0] - 2026-10-10
+
+### Added
+
+- Servicio HTTP del mini banco con `POST /msg`, `GET /health` y `POST /__reset`
+  (`docs/standards/openapi.yml`, spec `openspec/changes/implementar-backend-mini-banco/specs/mini-banco/spec.md`).

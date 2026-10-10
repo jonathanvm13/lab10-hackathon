@@ -1,0 +1,85 @@
+[project]
+name = "app"
+version = "1.0.0"
+requires-python = ">=3.13,<3.14"
+dependencies = ["fastapi==0.143.0", "uvicorn==0.54.0"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+  "pytest==9.1.1",
+  "pytest-cov==7.1.0",
+  "httpx==0.28.1",
+  "ruff==0.17.0",
+  "mypy==2.4.0",
+  "bandit==1.9.4",
+  "pip-audit==2.10.1",
+  "openapi-spec-validator==0.9.0",
+  "pyyaml==6.0.3",
+  "types-PyYAML==6.0.12.20260906",
+]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+src = ["app", "pruebas"]
+extend-exclude = ["herramientas"]
+
+[tool.ruff.lint]
+select = [
+  "E", "W", "F",
+  "I",
+  "N",
+  "UP",
+  "B",
+  "S",
+  "BLE",
+  "A",
+  "C4", "SIM", "RET", "PIE",
+  "T20",
+  "DTZ",
+  "PTH",
+  "ARG", "ERA",
+  "PL",
+  "TRY",
+  "ANN",
+  "D",
+  "RUF",
+]
+ignore = ["TRY003"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"pruebas/**" = ["S101", "D", "ANN", "PLR2004", "ARG001"]
+
+[tool.ruff.format]
+quote-style = "double"
+docstring-code-format = true
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+warn_unreachable = true
+files = ["app", "pruebas"]
+
+[tool.pytest.ini_options]
+testpaths = ["pruebas"]
+addopts = "-ra --strict-markers --strict-config"
+xfail_strict = true
+markers = ["security: tests de seguridad"]
+
+[tool.coverage.run]
+source = ["app"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 90
+
+[tool.bandit]
+exclude_dirs = ["pruebas", "herramientas"]

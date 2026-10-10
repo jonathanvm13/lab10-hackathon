@@ -1,0 +1,46 @@
+{"seq": "h1", "hipotesis": "ruta desconocida sin token responde E404 (ruta/404 antes que auth)", "method": "GET", "path": "/nope", "auth": "sin", "body": null}
+{"seq": "h1", "hipotesis": "health sin token responde E001 (requiere auth)", "method": "GET", "path": "/health", "auth": "sin", "body": null}
+{"seq": "h1", "hipotesis": "health con token responde 200", "method": "GET", "path": "/health", "auth": "propio", "body": null}
+{"seq": "h1", "hipotesis": "msg sin token responde E001", "method": "POST", "path": "/msg", "auth": "sin", "body": null}
+{"seq": "h1", "hipotesis": "cuerpo no JSON responde E100", "method": "POST", "path": "/msg", "auth": "propio", "body": "no soy json"}
+{"seq": "h1", "hipotesis": "cuerpo JSON sin clave m responde E102", "method": "POST", "path": "/msg", "auth": "propio", "body": {"x": 1}}
+{"seq": "h1", "hipotesis": "m vacío responde E103 (falta control)", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": ""}}
+{"seq": "h1", "hipotesis": "control vacío (PING;) responde E104", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "PING;"}}
+{"seq": "h1", "hipotesis": "GET sobre /msg responde E404 (método/ruta)", "method": "GET", "path": "/msg", "auth": "propio", "body": null}
+{"seq": "h2", "hipotesis": "reset h2", "method": "POST", "path": "/__reset", "auth": "propio", "body": null}
+{"seq": "h2", "hipotesis": "PING con control correcto (64) responde pong", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "PING;64"}}
+{"seq": "h2", "hipotesis": "PING con control no numérico (XX) igual responde pong", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "PING;XX"}}
+{"seq": "h2", "hipotesis": "PING con aridad extra (X;21) responde E302", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "PING;X;21"}}
+{"seq": "h2", "hipotesis": "CONSULTA control válido (5) sobre cuenta inexistente responde E401", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "CONSULTA;AC-1;5"}}
+{"seq": "h2", "hipotesis": "CONSULTA control con cero a la izquierda (05) responde E202 (compara como texto)", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "CONSULTA;AC-1;05"}}
+{"seq": "h2", "hipotesis": "CONSULTA control no numérico (5X) responde E201", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "CONSULTA;AC-1;5X"}}
+{"seq": "h2", "hipotesis": "comando desconocido ZZZQ (ctrl 12) responde E301 sin sugerencia", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "ZZZQ;12"}}
+{"seq": "h2", "hipotesis": "comando desconocido PONG (ctrl 98) responde E301 con sugerencia PING", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "PONG;98"}}
+{"seq": "h2", "hipotesis": "ALTA con aridad inválida (dos nombres) responde E302", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "ALTA;Lucia;Gomez;11"}}
+{"seq": "h2", "hipotesis": "HALT responde E520", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "HALT;X;42"}}
+{"seq": "h3", "hipotesis": "reset h3", "method": "POST", "path": "/__reset", "auth": "propio", "body": null}
+{"seq": "h3", "hipotesis": "ALTA;A (ctrl 62) crea AC-0001", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "ALTA;A;62"}}
+{"seq": "h3", "hipotesis": "ALTA;B (ctrl 59) crea AC-0002", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "ALTA;B;59"}}
+{"seq": "h3", "hipotesis": "CONSULTA AC-0001 (ctrl 14) saldo inicial 0", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "CONSULTA;AC-0001;14"}}
+{"seq": "h3", "hipotesis": "DEPOSITO 500000 a AC-0001 (ctrl 90) genera OP-0001", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "DEPOSITO;AC-0001;500000;90"}}
+{"seq": "h3", "hipotesis": "TRANSFER 100000 AC-0001->AC-0002 (ctrl 12) OK genera OP-0002", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "TRANSFER;AC-0001;AC-0002;100000;12"}}
+{"seq": "h3", "hipotesis": "TRANSFER 200000 AC-0002->AC-0001 (ctrl 61): E506 o E507 (anotar cuál)", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "TRANSFER;AC-0002;AC-0001;200000;61"}}
+{"seq": "h3", "hipotesis": "TRANSFER 99999 AC-0002->AC-0001 (ctrl 85) responde E507 saldo insuficiente", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "TRANSFER;AC-0002;AC-0001;99999;85"}}
+{"seq": "h3", "hipotesis": "DEPOSITO monto no numérico abc (ctrl 13) responde E303", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "DEPOSITO;AC-0001;abc;13"}}
+{"seq": "h3", "hipotesis": "TRANSFER a sí misma AC-0001->AC-0001 (ctrl 96) responde E304", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "TRANSFER;AC-0001;AC-0001;50;96"}}
+{"seq": "h3", "hipotesis": "TRANSFER a cuenta inexistente AC-9999 (ctrl 33) responde E401", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "TRANSFER;AC-0001;AC-9999;50;33"}}
+{"seq": "h3", "hipotesis": "ANULA OP-0002 (ctrl 69) responde ok", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "ANULA;OP-0002;69"}}
+{"seq": "h3", "hipotesis": "ANULA OP-0002 de nuevo (ctrl 69) responde ya anulada", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "ANULA;OP-0002;69"}}
+{"seq": "h3", "hipotesis": "ANULA operación inexistente OP-9999 (ctrl 51) responde E402", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "ANULA;OP-9999;51"}}
+{"seq": "h3", "hipotesis": "CONSULTA AC-0001 (ctrl 14) saldo tras operaciones y anulación", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "CONSULTA;AC-0001;14"}}
+{"seq": "h3", "hipotesis": "CONSULTA AC-0002 (ctrl 11) saldo tras operaciones y anulación", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "CONSULTA;AC-0002;11"}}
+{"seq": "h4", "hipotesis": "reset h4", "method": "POST", "path": "/__reset", "auth": "propio", "body": null}
+{"seq": "h4", "hipotesis": "ALTA;A (ctrl 62) crea AC-0001", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "ALTA;A;62"}}
+{"seq": "h4", "hipotesis": "ALTA;B (ctrl 59) crea AC-0002", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "ALTA;B;59"}}
+{"seq": "h4", "hipotesis": "DEPOSITO 500000 a AC-0001 (ctrl 90) genera OP-0001", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "DEPOSITO;AC-0001;500000;90"}}
+{"seq": "h4", "hipotesis": "strike 1: TRANSFER 100001 (ctrl 9) excede límite E506", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "TRANSFER;AC-0001;AC-0002;100001;9"}}
+{"seq": "h4", "hipotesis": "strike 2: TRANSFER 100001 (ctrl 9) excede límite E506", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "TRANSFER;AC-0001;AC-0002;100001;9"}}
+{"seq": "h4", "hipotesis": "strike 3: TRANSFER 100001 (ctrl 9) excede límite E506", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "TRANSFER;AC-0001;AC-0002;100001;9"}}
+{"seq": "h4", "hipotesis": "tras 3 strikes TRANSFER 50 (ctrl 87) responde E510 (bloqueado)", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "TRANSFER;AC-0001;AC-0002;50;87"}}
+{"seq": "h4", "hipotesis": "DEPOSITO 100 a AC-0001 (ctrl 82) desbloquea los strikes", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "DEPOSITO;AC-0001;100;82"}}
+{"seq": "h4", "hipotesis": "tras desbloqueo TRANSFER 50 (ctrl 87) responde OK", "method": "POST", "path": "/msg", "auth": "propio", "body": {"m": "TRANSFER;AC-0001;AC-0002;50;87"}}

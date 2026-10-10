@@ -1,0 +1,466 @@
+openapi: 3.1.0
+
+info:
+  title: API de mini banco
+  version: 1.0.0
+  summary: Mini banco basado en mensajes de texto con dígito de control.
+  description: |
+    Contrato del servicio. Las respuestas deben coincidir **exactamente** con este contrato: mismo
+    status y mismo cuerpo, carácter por carácter. Este archivo es la **fuente de verdad** del contrato
+    (ver `docs/standards/documentation-standards.md`). FastAPI **no** lo genera ni lo publica.
+
+    ## Rutas
+    Solo existen `POST /msg`, `GET /health` y `POST /__reset` (v1, sin versión en la ruta).
+    Cualquier otra combinación de ruta y método responde `404 E404`, **antes** de validar la auth:
+    rutas inexistentes, `GET /`, `GET /__reset`, `POST /health`, `/msg/` con barra final y
+    `GET|PUT|DELETE|PATCH|OPTIONS|HEAD /msg`.
+    `HEAD` responde 404 **con cuerpo vacío**. La query string no cambia la ruta (`POST /msg?confirm=1`
+    se trata como `POST /msg`).
+
+    ## Formato de `m`
+    `COMANDO;arg1;...;argN;control`
+    - Se separa por `;`. **Sin trim**: los espacios forman parte del segmento.
+    - Un segmento vacío (`PING;`, `ALTA;;85`, `;` final o doble) → E104. Solo el comando → E103.
+    - `control`: exactamente 1–2 dígitos ASCII (si no → E201). Se calcula con ISO 7064 MOD 97-10
+      sobre el mensaje sin el control: cada letra ASCII (a–z/A–Z) vale 1..26 en decimal, cada dígito
+      ASCII 0–9 vale tal cual y todo lo demás (incluidos los caracteres no ASCII) se ignora;
+      `N = int(cadena or "0")`; `control = 98 - (N*100) % 97` (rango 2..98). Se compara **como texto**
+      (`02` ≠ `2` → E202).
+    - `PING` no valida el control (ni formato ni valor).
+    - El comando no distingue mayúsculas; los IDs `AC-NNNN` / `OP-NNNN` sí.
+
+    | Comando | Args | Respuesta OK |
+    |---|---|---|
+    | `PING` | 0 | `200 {"pong":true}` |
+    | `ALTA;nombre` | 1 | `201 {"cuentaId":"AC-000N"}` |
+    | `CONSULTA;cuenta` | 1 | `200 {"cuenta_id":"AC-000N","saldo":N}` |
+    | `DEPOSITO;cuenta;monto` | 2 | `200 {"status":"recieved","operacionId":"OP-000N"}` |
+    | `TRANSFER;orig;dest;monto` | 3 | `200 {"status":"recieved","operacionId":"OP-000N"}` |
+    | `ANULA;opId` | 1 | `200 {"ok":true,"anulada":"OP-000N"}` o `200 {"ok":false,"motivo":"ya anulada"}` |
+    | `HALT;arg` | 1 | siempre `409 E520` |
+
+    ## Orden de validación (gana el primer fallo)
+    1. E404 ruta + método (404)
+    2. E001 auth (401)
+    3. E100 JSON (400)
+    4. E102 `m` (400)
+    5. E104 segmento vacío / E103 falta control (400)
+    6. E201 formato del control (400) — no aplica a PING
+    7. E202 valor del control (400) — no aplica a PING
+    8. E301 comando (400)
+    9. E302 aridad (400)
+    10. E303 monto (400)
+    11. E304 origen = destino (400)
+    12. E401 cuenta (404)
+    13. E520 HALT (409) / E402 operación (404)
+    14. E510 bloqueo (409)
+    15. E506 límite (422)
+    16. E507 saldo (422)
+
+    ## Error interno
+    Una excepción inesperada responde `500` con cuerpo en texto plano `Internal Server Error`.
+
+servers:
+  - url: https://<servicio>.up.railway.app
+    description: Despliegue en Railway (una sola instancia).
+  - url: http://localhost:8000
+    description: Local.
+
+security:
+  - bearerAuth: []
+
+paths:
+  /msg:
+    post:
+      operationId: enviarMensaje
+      summary: Envía un mensaje `COMANDO;args;control` al mini banco.
+      description: |
+        El cuerpo debe ser JSON con `m` string. Las claves extra se ignoran; si `m` viene duplicada,
+        gana la última. `m` no string (número, null, lista) se trata como ausente → E102.
+        `m: ""` → E103. Cuerpo vacío o no JSON → E100.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Mensaje"
+            examples:
+              ping:
+                value: {"m": "PING;64"}
+              alta:
+                value: {"m": "ALTA;Lucia;82"}
+              deposito:
+                value: {"m": "DEPOSITO;AC-0001;250000;86"}
+      responses:
+        "200":
+          description: Comando ejecutado (PING, CONSULTA, DEPOSITO, TRANSFER, ANULA).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Pong"
+                  - $ref: "#/components/schemas/Consulta"
+                  - $ref: "#/components/schemas/OperacionRecibida"
+                  - $ref: "#/components/schemas/AnulaOk"
+                  - $ref: "#/components/schemas/AnulaYaAnulada"
+              examples:
+                OK_PING:
+                  $ref: "#/components/examples/OK_PING"
+                OK_CONSULTA:
+                  $ref: "#/components/examples/OK_CONSULTA"
+                OK_DEPOSITO:
+                  $ref: "#/components/examples/OK_DEPOSITO"
+                OK_TRANSFER:
+                  $ref: "#/components/examples/OK_TRANSFER"
+                OK_ANULA:
+                  $ref: "#/components/examples/OK_ANULA"
+                OK_ANULA_YA_ANULADA:
+                  $ref: "#/components/examples/OK_ANULA_YA_ANULADA"
+        "201":
+          description: Cuenta creada (ALTA). Saldo inicial 0.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alta"
+              examples:
+                OK_ALTA:
+                  $ref: "#/components/examples/OK_ALTA"
+        "400":
+          description: Error de formato, integridad o argumentos.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                E100:
+                  $ref: "#/components/examples/E100"
+                E102:
+                  $ref: "#/components/examples/E102"
+                E103:
+                  $ref: "#/components/examples/E103"
+                E104:
+                  $ref: "#/components/examples/E104"
+                E201:
+                  $ref: "#/components/examples/E201"
+                E202:
+                  $ref: "#/components/examples/E202"
+                E301:
+                  $ref: "#/components/examples/E301"
+                E301_SUGERENCIA:
+                  $ref: "#/components/examples/E301_SUGERENCIA"
+                E302:
+                  $ref: "#/components/examples/E302"
+                E303:
+                  $ref: "#/components/examples/E303"
+                E304:
+                  $ref: "#/components/examples/E304"
+        "401":
+          $ref: "#/components/responses/NoAutorizado"
+        "404":
+          description: Ruta/método desconocido (E404), cuenta inexistente (E401) u operación inexistente (E402).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                E404:
+                  $ref: "#/components/examples/E404"
+                E401:
+                  $ref: "#/components/examples/E401"
+                E402:
+                  $ref: "#/components/examples/E402"
+        "409":
+          description: HALT (E520) o cuenta origen bloqueada (E510).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                E520:
+                  $ref: "#/components/examples/E520"
+                E510:
+                  $ref: "#/components/examples/E510"
+        "422":
+          description: Límite de TRANSFER excedido (E506) o saldo insuficiente (E507).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                E506:
+                  $ref: "#/components/examples/E506"
+                E507:
+                  $ref: "#/components/examples/E507"
+        "500":
+          $ref: "#/components/responses/ErrorInterno"
+    head:
+      operationId: headMensaje
+      summary: HEAD no existe en /msg.
+      description: Responde 404 con cuerpo vacío, sin validar la auth.
+      security: []
+      responses:
+        "404":
+          description: Ruta desconocida. Cuerpo vacío.
+
+  /health:
+    get:
+      operationId: health
+      summary: Disponibilidad del servicio.
+      description: Requiere token. `POST /health` → E404.
+      responses:
+        "200":
+          description: Listo.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ok"
+              examples:
+                OK:
+                  $ref: "#/components/examples/OK"
+        "401":
+          $ref: "#/components/responses/NoAutorizado"
+        "404":
+          $ref: "#/components/responses/RutaDesconocida"
+        "500":
+          $ref: "#/components/responses/ErrorInterno"
+
+  /__reset:
+    post:
+      operationId: reset
+      summary: Vuelve el estado del token a cero.
+      description: |
+        Reinicia cuentas, operaciones, saldos, strikes y los contadores AC/OP (desde 0001).
+        No reinicia el header `X-Req`. `GET /__reset` → E404.
+      responses:
+        "200":
+          description: Estado reiniciado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ok"
+              examples:
+                OK:
+                  $ref: "#/components/examples/OK"
+        "401":
+          $ref: "#/components/responses/NoAutorizado"
+        "404":
+          $ref: "#/components/responses/RutaDesconocida"
+        "500":
+          $ref: "#/components/responses/ErrorInterno"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: |
+        `Authorization: Bearer <token>`. El esquema `Bearer` es exacto y sensible a mayúsculas.
+        Sin header, token inválido, sin prefijo `Bearer`, `Bearer` sin token o `bearer` en minúscula
+        → 401 E001.
+
+  schemas:
+    Mensaje:
+      type: object
+      required: [m]
+      properties:
+        m:
+          type: string
+          description: "`COMANDO;args;control` (ver la descripción general)."
+      additionalProperties: true
+    Ok:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          const: true
+      additionalProperties: false
+    Pong:
+      type: object
+      required: [pong]
+      properties:
+        pong:
+          const: true
+      additionalProperties: false
+    Alta:
+      type: object
+      required: [cuentaId]
+      properties:
+        cuentaId:
+          type: string
+          pattern: "^AC-[0-9]{4}$"
+      additionalProperties: false
+    Consulta:
+      type: object
+      required: [cuenta_id, saldo]
+      properties:
+        cuenta_id:
+          type: string
+          pattern: "^AC-[0-9]{4}$"
+        saldo:
+          type: integer
+          description: Puede ser negativo tras un ANULA.
+      additionalProperties: false
+    OperacionRecibida:
+      type: object
+      required: [status, operacionId]
+      properties:
+        status:
+          const: recieved
+          description: Texto literal del contrato (`recieved`); no corregir.
+        operacionId:
+          type: string
+          pattern: "^OP-[0-9]{4}$"
+      additionalProperties: false
+    AnulaOk:
+      type: object
+      required: [ok, anulada]
+      properties:
+        ok:
+          const: true
+        anulada:
+          type: string
+          pattern: "^OP-[0-9]{4}$"
+      additionalProperties: false
+    AnulaYaAnulada:
+      type: object
+      required: [ok, motivo]
+      properties:
+        ok:
+          const: false
+        motivo:
+          const: ya anulada
+      additionalProperties: false
+    Error:
+      type: object
+      required: [error, mensaje]
+      properties:
+        error:
+          type: string
+          enum: [E001, E404, E100, E102, E103, E104, E201, E202, E301, E302, E303, E304, E401, E402, E510, E506, E507, E520]
+        mensaje:
+          type: string
+        sugerencia:
+          type: string
+          enum: [PING, ALTA, CONSULTA, DEPOSITO, TRANSFER, ANULA, HALT]
+          description: |
+            Solo en E301, cuando el comando está a distancia de Levenshtein ≤ 2 de uno real
+            (comparando en mayúsculas; en empate gana el alfabéticamente menor).
+      additionalProperties: false
+
+  responses:
+    NoAutorizado:
+      description: Falta el token o es inválido (E001).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            E001:
+              $ref: "#/components/examples/E001"
+    RutaDesconocida:
+      description: Ruta o método desconocido (E404). Se evalúa antes que la auth.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            E404:
+              $ref: "#/components/examples/E404"
+    ErrorInterno:
+      description: Excepción interna inesperada.
+      content:
+        text/plain:
+          schema:
+            type: string
+            const: Internal Server Error
+          examples:
+            E500:
+              $ref: "#/components/examples/E500"
+
+  examples:
+    # Respuestas OK.
+    OK:
+      summary: "200 — /health y /__reset"
+      value: {"ok": true}
+    OK_PING:
+      summary: "200 — PING"
+      value: {"pong": true}
+    OK_ALTA:
+      summary: "201 — ALTA"
+      value: {"cuentaId": "AC-0001"}
+    OK_CONSULTA:
+      summary: "200 — CONSULTA"
+      value: {"cuenta_id": "AC-0001", "saldo": 0}
+    OK_DEPOSITO:
+      summary: "200 — DEPOSITO"
+      value: {"status": "recieved", "operacionId": "OP-0001"}
+    OK_TRANSFER:
+      summary: "200 — TRANSFER"
+      value: {"status": "recieved", "operacionId": "OP-0002"}
+    OK_ANULA:
+      summary: "200 — ANULA"
+      value: {"ok": true, "anulada": "OP-0003"}
+    OK_ANULA_YA_ANULADA:
+      summary: "200 — ANULA repetida"
+      value: {"ok": false, "motivo": "ya anulada"}
+    # Errores.
+    E001:
+      summary: "401 — no autorizado"
+      value: {"error": "E001", "mensaje": "no autorizado"}
+    E404:
+      summary: "404 — ruta desconocida"
+      value: {"error": "E404", "mensaje": "ruta desconocida"}
+    E100:
+      summary: "400 — json inválido"
+      value: {"error": "E100", "mensaje": "json inválido"}
+    E102:
+      summary: "400 — falta m"
+      value: {"error": "E102", "mensaje": "falta m"}
+    E103:
+      summary: "400 — falta control"
+      value: {"error": "E103", "mensaje": "falta control"}
+    E104:
+      summary: "400 — segmento vacío"
+      value: {"error": "E104", "mensaje": "segmento vacío"}
+    E201:
+      summary: "400 — control mal formado"
+      value: {"error": "E201", "mensaje": "control mal formado"}
+    E202:
+      summary: "400 — control inválido"
+      value: {"error": "E202", "mensaje": "control inválido"}
+    E301:
+      summary: "400 — comando desconocido, sin sugerencia. El mensaje termina en espacio"
+      value: {"error": "E301", "mensaje": "comando desconocido "}
+    E301_SUGERENCIA:
+      summary: "400 — comando desconocido con sugerencia; PONG → PING"
+      value: {"error": "E301", "mensaje": "comando desconocido ", "sugerencia": "PING"}
+    E302:
+      summary: "400 — aridad inválida"
+      value: {"error": "E302", "mensaje": "aridad inválida"}
+    E303:
+      summary: "400 — monto inválido"
+      value: {"error": "E303", "mensaje": "monto inválido"}
+    E304:
+      summary: "400 — origen y destino iguales"
+      value: {"error": "E304", "mensaje": "origen y destino iguales"}
+    E401:
+      summary: "404 — cuenta inexistente"
+      value: {"error": "E401", "mensaje": "cuenta inexistente"}
+    E402:
+      summary: "404 — operación inexistente"
+      value: {"error": "E402", "mensaje": "operación inexistente"}
+    E520:
+      summary: "409 — HALT, siempre (no ejecuta ninguna acción)"
+      value: {"error": "E520", "mensaje": "operación destructiva: detiene el servicio; reenvía con confirmación"}
+    E510:
+      summary: "409 — cuenta bloqueada tras 3 strikes"
+      value: {"error": "E510", "mensaje": "cuenta bloqueada"}
+    E506:
+      summary: "422 — TRANSFER > 100000"
+      value: {"error": "E506", "mensaje": "límite excedido"}
+    E507:
+      summary: "422 — saldo insuficiente; cuenta como strike"
+      value: {"error": "E507", "mensaje": "saldo insuficiente"}
+    E500:
+      summary: "500 — excepción interna inesperada, text/plain"
+      value: Internal Server Error

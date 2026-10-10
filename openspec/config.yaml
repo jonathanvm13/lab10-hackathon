@@ -1,0 +1,10 @@
+schema: spec-driven
+
+# Contexto del proyecto. Se inyecta al crear artefactos.
+# Los documentos oficiales viven en docs/standards/; no se copia su contenido aquí.
+context: |
+  Documentos técnicos oficiales. Leerlos y seguirlos; no repetir su contenido en los artefactos:
+
+  - docs/standards/backend-standards.md
+  - docs/standards/documentation-standards.md
+  - docs/standards/openapi.yml

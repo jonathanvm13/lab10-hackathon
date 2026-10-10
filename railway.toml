@@ -1,0 +1,14 @@
+# Una sola instancia. APP_AUTH_TOKEN y APP_LOG_LEVEL se definen en Railway, no aquí.
+# GET /health exige Authorization; el chequeo HTTP de Railway no lo envía.
+
+[build]
+builder = "RAILPACK"
+buildCommand = "uv sync --frozen --no-dev"
+
+[deploy]
+startCommand = "uv run uvicorn app.entrada:app --host 0.0.0.0 --port $PORT --workers 1 --no-access-log"
+numReplicas = 1
+overlapSeconds = 0
+sleepApplication = false
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
