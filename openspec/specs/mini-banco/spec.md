@@ -20,12 +20,12 @@ El servicio SHALL exponer solo `POST /msg`, `GET /health` y `POST /__reset`, sin
 #### Scenario: Método no soportado en /msg
 
 - **WHEN** llega `GET`, `PUT`, `DELETE`, `PATCH` u `OPTIONS` sobre `/msg`
-- **THEN** la respuesta es el ejemplo `E404`
+- **THEN** la respuesta es el ejemplo `E404` (`docs/architecture/citas.jsonl`, líneas 9, 159, 160, 161 y 162)
 
 #### Scenario: HEAD sin cuerpo
 
 - **WHEN** llega `HEAD /msg`
-- **THEN** el status es `404` y el cuerpo está vacío
+- **THEN** el status es `404` y el cuerpo está vacío (`docs/architecture/citas.jsonl`, línea 163)
 
 #### Scenario: Query string no cambia la ruta
 
@@ -39,17 +39,17 @@ Toda ruta conocida SHALL exigir `Authorization` igual a `Bearer <token>` con el 
 #### Scenario: Token válido en health
 
 - **WHEN** llega `GET /health` con el token configurado
-- **THEN** la respuesta es el ejemplo `OK`
+- **THEN** la respuesta es el ejemplo `OK` (`docs/architecture/citas.jsonl`, línea 3)
 
 #### Scenario: Bearer en minúscula
 
 - **WHEN** llega `POST /msg` con `Authorization: bearer <token>` y un JSON válido
-- **THEN** la respuesta es el ejemplo `E001`
+- **THEN** la respuesta es el ejemplo `E001` (`docs/architecture/citas.jsonl`, línea 136)
 
 #### Scenario: Ruta desconocida gana a la auth
 
 - **WHEN** llega `GET /msg` sin token
-- **THEN** la respuesta es el ejemplo `E404`
+- **THEN** la respuesta es el ejemplo `E404` (`docs/architecture/citas.jsonl`, línea 157)
 
 ### Requirement: Cuerpo JSON de /msg
 
@@ -58,7 +58,7 @@ Toda ruta conocida SHALL exigir `Authorization` igual a `Bearer <token>` con el 
 #### Scenario: Cuerpo vacío
 
 - **WHEN** llega `POST /msg` con token válido y cuerpo vacío
-- **THEN** la respuesta es el ejemplo `E100`
+- **THEN** la respuesta es el ejemplo `E100` (`docs/architecture/citas.jsonl`, línea 142)
 
 #### Scenario: m numérico
 
@@ -68,12 +68,12 @@ Toda ruta conocida SHALL exigir `Authorization` igual a `Bearer <token>` con el 
 #### Scenario: JSON que no es objeto
 
 - **WHEN** llega `POST /msg` con token válido y el cuerpo es `["PING;64"]` o `"PING;64"`
-- **THEN** la respuesta es el ejemplo `E102` y no es `500`
+- **THEN** la respuesta es el ejemplo `E102` y no es `500` (`docs/architecture/citas.jsonl`, líneas 177 y 178)
 
 #### Scenario: m cadena vacía
 
 - **WHEN** llega `POST /msg` con token válido y `{"m": ""}`
-- **THEN** la respuesta es el ejemplo `E103`
+- **THEN** la respuesta es el ejemplo `E103` (`docs/architecture/citas.jsonl`, línea 7)
 
 ### Requirement: Orden de validación del mensaje
 
@@ -82,7 +82,7 @@ Para `POST /msg` autenticado, el servicio SHALL aplicar este orden y SHALL respo
 #### Scenario: Segmento vacío antes que el control
 
 - **WHEN** el mensaje es `ALTA;;<control>` con control de uno o dos dígitos
-- **THEN** la respuesta es el ejemplo `E104`
+- **THEN** la respuesta es el ejemplo `E104` (`docs/architecture/citas.jsonl`, línea 146)
 
 #### Scenario: Solo el comando
 
@@ -92,22 +92,22 @@ Para `POST /msg` autenticado, el servicio SHALL aplicar este orden y SHALL respo
 #### Scenario: Control de tres dígitos antes que el comando
 
 - **WHEN** el mensaje es `ZZZQ;100`
-- **THEN** la respuesta es el ejemplo `E201`
+- **THEN** la respuesta es el ejemplo `E201` (`docs/architecture/citas.jsonl`, línea 143)
 
 #### Scenario: PING con segmento vacío
 
 - **WHEN** el mensaje es `PING;` o `PING;X;`
-- **THEN** la respuesta es el ejemplo `E104`
+- **THEN** la respuesta es el ejemplo `E104` (`docs/architecture/citas.jsonl`, líneas 8 y 179)
 
 #### Scenario: PING no valida el control
 
 - **WHEN** el mensaje tiene exactamente dos segmentos, el comando es `PING` y el segundo segmento no está vacío
-- **THEN** la respuesta es el ejemplo `OK_PING`
+- **THEN** la respuesta es el ejemplo `OK_PING` (`docs/architecture/citas.jsonl`, líneas 11 y 12)
 
 #### Scenario: PING con aridad de más
 
 - **WHEN** el mensaje `PING` tiene más de dos segmentos y ninguno está vacío
-- **THEN** la respuesta es el ejemplo `E302`
+- **THEN** la respuesta es el ejemplo `E302` (`docs/architecture/citas.jsonl`, línea 13)
 
 ### Requirement: Dígito de control
 
@@ -130,17 +130,17 @@ Un comando que no es `PING`, `ALTA`, `CONSULTA`, `DEPOSITO`, `TRANSFER`, `ANULA`
 #### Scenario: Sin sugerencia
 
 - **WHEN** el comando no se parece a ninguno real dentro de distancia 2 y el control es válido
-- **THEN** la respuesta es el ejemplo `E301`
+- **THEN** la respuesta es el ejemplo `E301` (`docs/architecture/citas.jsonl`, línea 17)
 
 #### Scenario: Sugerencia PING
 
 - **WHEN** el comando es `PONG` y el control es válido
-- **THEN** la respuesta es el ejemplo `E301_SUGERENCIA`
+- **THEN** la respuesta es el ejemplo `E301_SUGERENCIA` (`docs/architecture/citas.jsonl`, línea 18)
 
 #### Scenario: Empate alfabético
 
 - **WHEN** dos comandos reales empatan en la distancia mínima ≤ 2
-- **THEN** `sugerencia` es el alfabéticamente menor
+- **THEN** `sugerencia` es el alfabéticamente menor (`docs/architecture/citas.jsonl`, línea 158)
 
 ### Requirement: Comandos que modifican estado
 
@@ -149,7 +149,7 @@ Tras un `POST /__reset` exitoso, la primera `ALTA` válida SHALL crear `AC-0001`
 #### Scenario: Alta y consulta
 
 - **WHEN** tras un reset se ejecuta `ALTA;Lucia;82` y luego la consulta válida de `AC-0001`
-- **THEN** la alta es `OK_ALTA` y la consulta es `OK_CONSULTA` con `saldo` igual a `"0.00"` (`docs/architecture/INCIDENT.md`, inc 116)
+- **THEN** la alta es `OK_ALTA` y la consulta es `OK_CONSULTA` con `saldo` igual a `"0.00"` (`docs/architecture/INCIDENT.md`, inc 116; `docs/architecture/citas.jsonl`, líneas 50 y 52)
 
 #### Scenario: Depósito
 
@@ -159,27 +159,27 @@ Tras un `POST /__reset` exitoso, la primera `ALTA` válida SHALL crear `AC-0001`
 #### Scenario: Transferencia mueve los dos saldos
 
 - **WHEN** un `TRANSFER` válido mueve un monto entero del origen al destino
-- **THEN** la consulta del origen baja en ese monto y la del destino sube en ese monto, ambas como string con dos decimales
+- **THEN** la consulta del origen baja en ese monto y la del destino sube en ese monto, ambas como string con dos decimales (`docs/architecture/citas.jsonl`, líneas 54, 55 y 58)
 
 #### Scenario: Entero con decimales y parte menor que uno
 
 - **WHEN** una cuenta queda con saldo entero `12345` y otra con `5`
-- **THEN** sus consultas muestran `"123.45"` y `"0.05"` (`docs/architecture/INCIDENT.md`, inc 163 y 166)
+- **THEN** sus consultas muestran `"123.45"` y `"0.05"` (`docs/architecture/INCIDENT.md`, inc 163 y 166; `docs/architecture/citas.jsonl`, líneas 71 y 74)
 
 #### Scenario: Sin separador de miles
 
 - **WHEN** una cuenta queda con saldo entero `123456789`
-- **THEN** la consulta muestra `"1234567.89"` (inc 169)
+- **THEN** la consulta muestra `"1234567.89"` (inc 169; `docs/architecture/citas.jsonl`, línea 77)
 
 #### Scenario: Saldo negativo
 
 - **WHEN** una cuenta queda con saldo entero `-500`
-- **THEN** la consulta muestra `"-5.00"` (inc 174)
+- **THEN** la consulta muestra `"-5.00"` (inc 174; `docs/architecture/citas.jsonl`, línea 82)
 
 #### Scenario: Diez dígitos en consulta
 
 - **WHEN** una cuenta queda con saldo entero `9999999999`
-- **THEN** la consulta muestra `"99999999.99"` (inc 254)
+- **THEN** la consulta muestra `"99999999.99"` (inc 254; `docs/architecture/citas.jsonl`, línea 131)
 
 #### Scenario: Centavo negativo
 
@@ -193,17 +193,17 @@ Un monto SHALL ser un entero decimal positivo, sin signo y sin ceros a la izquie
 #### Scenario: Monto cero
 
 - **WHEN** llega `DEPOSITO` a una cuenta existente con monto `0` y control válido
-- **THEN** la respuesta es el ejemplo `E303`
+- **THEN** la respuesta es el ejemplo `E303` (`docs/architecture/citas.jsonl`, línea 145)
 
 #### Scenario: Once dígitos
 
 - **WHEN** llega `DEPOSITO` con monto de 11 dígitos y control válido
-- **THEN** la respuesta es el ejemplo `E303`
+- **THEN** la respuesta es el ejemplo `E303` (`docs/architecture/citas.jsonl`, línea 130)
 
 #### Scenario: Diez dígitos se aceptan
 
 - **WHEN** llega `DEPOSITO` con monto `9999999999` y control válido a una cuenta existente
-- **THEN** la operación se acepta (inc 252)
+- **THEN** la operación se acepta (inc 252; `docs/architecture/citas.jsonl`, línea 129)
 
 #### Scenario: Cuenta destino inexistente antes que el saldo
 
@@ -213,27 +213,27 @@ Un monto SHALL ser un entero decimal positivo, sin signo y sin ceros a la izquie
 #### Scenario: Límite inclusivo
 
 - **WHEN** el origen tiene saldo suficiente y el monto de `TRANSFER` es `50000`
-- **THEN** la transferencia se acepta (inc 212)
+- **THEN** la transferencia se acepta (inc 212; `docs/architecture/citas.jsonl`, línea 90)
 
 #### Scenario: Por encima del límite
 
 - **WHEN** el monto de `TRANSFER` es `50001` y ambas cuentas existen
-- **THEN** la respuesta es el ejemplo `E506` (inc 213)
+- **THEN** la respuesta es el ejemplo `E506` (inc 213; `docs/architecture/citas.jsonl`, línea 91)
 
 #### Scenario: Tope de la mañana rechazado
 
 - **WHEN** ambas cuentas existen, el origen tiene saldo suficiente y el monto de `TRANSFER` es `100000` o `99999`
-- **THEN** la respuesta es el ejemplo `E506` (inc 118, 120 y 149)
+- **THEN** la respuesta es el ejemplo `E506` (inc 118, 120 y 149; `docs/architecture/citas.jsonl`, líneas 26, 28 y 57)
 
 #### Scenario: El rechazo no emite operación
 
 - **WHEN** tras un `DEPOSITO` de `500000` que crea `OP-0001`, un `TRANSFER` de `100000` y otro de `99999` responden `E506`, y se anula dos veces `OP-0002`
-- **THEN** las dos anulaciones son el ejemplo `E402`, la consulta del origen muestra `"5000.00"` y la del destino `"0.00"` (inc 124, 125, 127 y 128)
+- **THEN** las dos anulaciones son el ejemplo `E402`, la consulta del origen muestra `"5000.00"` y la del destino `"0.00"` (inc 124, 125, 127 y 128; `docs/architecture/citas.jsonl`, líneas 25, 26, 28, 32, 33, 35 y 36)
 
 #### Scenario: Depósito por encima del tope de transferencia
 
 - **WHEN** llega `DEPOSITO` de `100001` o de `123456789` a una cuenta existente
-- **THEN** la operación se acepta (inc 179 y 168)
+- **THEN** la operación se acepta (inc 179 y 168; `docs/architecture/citas.jsonl`, líneas 87 y 76)
 
 ### Requirement: Anulación
 
@@ -247,12 +247,12 @@ Un monto SHALL ser un entero decimal positivo, sin signo y sin ceros a la izquie
 #### Scenario: Anular un depósito ya gastado
 
 - **WHEN** se anula un depósito de `500` cuyo monto ya salió de la cuenta
-- **THEN** la respuesta es `OK_ANULA` y la consulta de esa cuenta muestra `"-5.00"`
+- **THEN** la respuesta es `OK_ANULA` y la consulta de esa cuenta muestra `"-5.00"` (`docs/architecture/citas.jsonl`, líneas 79–82)
 
 #### Scenario: Anular no consume correlativo
 
 - **WHEN** existe `OP-0001`, se anula, y el siguiente comando válido es un depósito
-- **THEN** el depósito nuevo responde con `OP-0002`
+- **THEN** el depósito nuevo responde con `OP-0002` (`docs/architecture/citas.jsonl`, líneas 150, 152 y 155)
 
 ### Requirement: Strikes y bloqueo
 
@@ -261,27 +261,27 @@ Cada `TRANSFER` del origen que responde `E506` o `E507` SHALL sumar un strike a 
 #### Scenario: Tres rechazos bloquean el cuarto
 
 - **WHEN** una cuenta origen acumula tres `TRANSFER` rechazados por `E506` o `E507` e intenta otro `TRANSFER`
-- **THEN** la respuesta es el ejemplo `E510`, con status `423` e `intentos` 1
+- **THEN** la respuesta es el ejemplo `E510`, con status `423` e `intentos` 1 (`docs/architecture/citas.jsonl`, líneas 41–44)
 
 #### Scenario: Dos strikes no bloquean y el éxito reinicia
 
 - **WHEN** el origen acumula dos `E506` y, con saldo suficiente, hace un `TRANSFER` de `40000`
-- **THEN** ese `TRANSFER` se acepta, los strikes vuelven a cero y hacen falta otros tres `E506` para que el siguiente `TRANSFER` responda `E510` con `intentos` 1 (inc 221–225)
+- **THEN** ese `TRANSFER` se acepta, los strikes vuelven a cero y hacen falta otros tres `E506` para que el siguiente `TRANSFER` responda `E510` con `intentos` 1 (inc 221–225; `docs/architecture/citas.jsonl`, líneas 96–102)
 
 #### Scenario: Intentos siguientes
 
 - **WHEN** la misma cuenta bloqueada recibe otros dos `TRANSFER` como origen
-- **THEN** responden `423` `E510` con `intentos` 2 y 3 (inc 225–227)
+- **THEN** responden `423` `E510` con `intentos` 2 y 3 (inc 225–227; `docs/architecture/citas.jsonl`, líneas 103 y 104)
 
 #### Scenario: Depósito propio desbloquea
 
 - **WHEN** la cuenta origen está bloqueada y recibe un `DEPOSITO` exitoso sobre sí misma
-- **THEN** un `TRANSFER` posterior válido de esa cuenta ya no responde `E510`
+- **THEN** un `TRANSFER` posterior válido de esa cuenta ya no responde `E510` (`docs/architecture/citas.jsonl`, líneas 44–46)
 
 #### Scenario: Nuevo bloqueo reinicia intentos
 
 - **WHEN** tras ese desbloqueo la cuenta vuelve a acumular tres strikes y hace otro `TRANSFER`
-- **THEN** la respuesta es `423` `E510` con `intentos` 1 (inc 235)
+- **THEN** la respuesta es `423` `E510` con `intentos` 1 (inc 235; `docs/architecture/citas.jsonl`, líneas 109–112)
 
 #### Scenario: Depósito a otra cuenta no reinicia
 
@@ -291,17 +291,17 @@ Cada `TRANSFER` del origen que responde `E506` o `E507` SHALL sumar un strike a 
 #### Scenario: Tres E507 bloquean el cuarto
 
 - **WHEN** una cuenta origen acumula tres `TRANSFER` rechazados por `E507` e intenta otro `TRANSFER`
-- **THEN** la respuesta es `423` `E510` (inc 243–246)
+- **THEN** la respuesta es `423` `E510` (inc 243–246; `docs/architecture/citas.jsonl`, líneas 120–123)
 
 #### Scenario: ANULA no desbloquea
 
 - **WHEN** la cuenta está bloqueada con `intentos` 1, se anula una operación suya y luego intenta otro `TRANSFER`
-- **THEN** `ANULA` responde éxito y el `TRANSFER` responde `423` `E510` con `intentos` 2 (inc 247–248)
+- **THEN** `ANULA` responde éxito y el `TRANSFER` responde `423` `E510` con `intentos` 2 (inc 247–248; `docs/architecture/citas.jsonl`, líneas 123–125)
 
 #### Scenario: Bloqueo solo como origen
 
 - **WHEN** la cuenta origen está bloqueada
-- **THEN** una `CONSULTA` de esa cuenta y un `TRANSFER` hacia ella desde otra cuenta no bloqueada se aceptan (inc 228 y 229)
+- **THEN** una `CONSULTA` de esa cuenta y un `TRANSFER` hacia ella desde otra cuenta no bloqueada se aceptan (inc 228 y 229; `docs/architecture/citas.jsonl`, líneas 105 y 106)
 
 ### Requirement: HALT
 
@@ -319,7 +319,7 @@ Cada `TRANSFER` del origen que responde `E506` o `E507` SHALL sumar un strike a 
 #### Scenario: El correlativo vuelve a empezar
 
 - **WHEN** ya existe `AC-0001`, se llama `POST /__reset` y luego una `ALTA` válida
-- **THEN** la nueva alta responde `OK_ALTA` (`AC-0001`)
+- **THEN** la nueva alta responde `OK_ALTA` (`AC-0001`) (`docs/architecture/citas.jsonl`, líneas 22, 37 y 38)
 
 #### Scenario: El reset borra intentos
 
