@@ -11,6 +11,10 @@ y este proyecto adhiere a [Versionado semántico](https://semver.org/lang/es/).
 
 - Railpack encuentra el arranque en `railpack.json` (`https://railpack.com/config/file`).
 
+### Removed
+
+- `railway.toml`. Railpack no lo lee (`https://railpack.com/config/file`).
+
 ## [1.0.0] - 2026-10-10
 
 ### Added

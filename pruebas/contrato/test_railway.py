@@ -1,8 +1,6 @@
-"""Pruebas de contrato de `railway.toml` y `railpack.json`."""
+"""Pruebas de contrato de `railpack.json`."""
 
 import json
-import re
-import tomllib
 from pathlib import Path
 
 _RAIZ = Path(__file__).resolve().parents[2]
@@ -10,48 +8,31 @@ _ARRANQUE = "uv run uvicorn app.entrada:app --host 0.0.0.0 --port $PORT --worker
 
 
 def _texto() -> str:
-    return (_RAIZ / "railway.toml").read_text(encoding="utf-8")
+    return (_RAIZ / "railpack.json").read_text(encoding="utf-8")
 
 
-def _secciones() -> tuple[dict[str, object], dict[str, object]]:
-    cargado = tomllib.loads(_texto())
+def _deploy() -> dict[str, object]:
+    cargado = json.loads(_texto())
     deploy = cargado["deploy"]
-    build = cargado["build"]
     assert isinstance(deploy, dict)
-    assert isinstance(build, dict)
-    return build, deploy
+    return deploy
 
 
-def test_railway_una_sola_instancia() -> None:
-    build, deploy = _secciones()
+def test_railpack_arranque() -> None:
+    """Railpack lee `railpack.json` (https://railpack.com/config/file)."""
+    arranque = _deploy()["startCommand"]
 
-    assert build["builder"] == "RAILPACK"
-    assert build["buildCommand"] == "uv sync --frozen --no-dev"
-    assert deploy["startCommand"] == _ARRANQUE
-    assert deploy["numReplicas"] == 1
-    assert deploy["overlapSeconds"] == 0
-    assert deploy["sleepApplication"] is False
-    assert "--workers 1" in str(deploy["startCommand"])
-    assert "$PORT" in str(deploy["startCommand"])
+    assert arranque == _ARRANQUE
+    assert "--workers 1" in str(arranque)
+    assert "$PORT" in str(arranque)
 
 
-def test_railway_sin_secreto_ni_asignacion_de_token() -> None:
+def test_railpack_sin_secreto_ni_asignacion_de_token() -> None:
     texto = _texto()
 
-    assert re.search(r"APP_AUTH_TOKEN\s*=", texto) is None
-    assert "Bearer " not in texto
-
-
-def test_railway_sin_healthcheck_anonimo() -> None:
-    assert "healthcheckPath" not in _texto()
-
-
-def test_railpack_arranca_igual_que_railway() -> None:
-    """Railpack lee `railpack.json`, no `railway.toml` (https://railpack.com/config/file)."""
-    cargado = json.loads((_RAIZ / "railpack.json").read_text(encoding="utf-8"))
-    deploy = cargado["deploy"]
-    assert isinstance(deploy, dict)
-    assert deploy["startCommand"] == _ARRANQUE
-    texto = json.dumps(cargado)
     assert "APP_AUTH_TOKEN" not in texto
     assert "Bearer " not in texto
+
+
+def test_railpack_sin_healthcheck_anonimo() -> None:
+    assert "healthcheckPath" not in _texto()

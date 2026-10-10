@@ -289,19 +289,19 @@ Si el resto además dice `+ header <Nombre>: <valor>`, el paso SHALL enviar ese 
 
 ### Requirement: Despliegue en Railway
 
-El repositorio SHALL incluir `railway.toml` en la raíz. El build SHALL usar Railpack y `uv sync --frozen --no-dev`. El arranque SHALL ser `uv run uvicorn app.entrada:app --host 0.0.0.0 --port $PORT --workers 1 --no-access-log`. SHALL haber una sola réplica (`numReplicas` = 1), sin solape con el deploy anterior (`overlapSeconds` = 0) y sin dormir la app por inactividad. El archivo SHALL NOT contener el token ni asignar `APP_AUTH_TOKEN`; esa variable se configura en Railway. SHALL NOT definir `healthcheckPath` en `/health`, porque esa ruta exige `Authorization` y el chequeo de Railway no lo envía.
+El repositorio SHALL incluir `railpack.json` en la raíz. Railpack lee ese archivo (`https://railpack.com/config/file`). El arranque SHALL ser `uv run uvicorn app.entrada:app --host 0.0.0.0 --port $PORT --workers 1 --no-access-log`. El archivo SHALL NOT contener el token ni asignar `APP_AUTH_TOKEN`; esa variable se configura en Railway. SHALL NOT definir `healthcheckPath` en `/health`, porque esa ruta exige `Authorization` y el chequeo de Railway no lo envía. Una sola réplica, sin solape y sin dormir la app se configuran en el servicio de Railway.
 
-#### Scenario: Una sola instancia
+#### Scenario: Arranque
 
-- **WHEN** se lee `railway.toml`
-- **THEN** `numReplicas` es 1, `overlapSeconds` es 0, `sleepApplication` es falso y el comando de arranque usa `--workers 1` y el puerto `$PORT`
+- **WHEN** se lee `railpack.json`
+- **THEN** el comando de arranque usa `--workers 1` y el puerto `$PORT`
 
 #### Scenario: Sin secreto en el archivo
 
-- **WHEN** se lee `railway.toml`
+- **WHEN** se lee `railpack.json`
 - **THEN** no aparece un token ni una asignación de `APP_AUTH_TOKEN`
 
 #### Scenario: Sin healthcheck anónimo a /health
 
-- **WHEN** se lee `railway.toml`
+- **WHEN** se lee `railpack.json`
 - **THEN** no hay `healthcheckPath` apuntando a `/health`

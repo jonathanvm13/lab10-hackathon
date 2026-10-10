@@ -1,0 +1,232 @@
+{
+  "0": {
+    "status": 404,
+    "raw": "{\"error\":\"E404\",\"mensaje\":\"ruta desconocida\"}",
+    "seq": "h1"
+  },
+  "1": {
+    "status": 401,
+    "raw": "{\"error\":\"E001\",\"mensaje\":\"no autorizado\"}",
+    "seq": "h1"
+  },
+  "2": {
+    "status": 200,
+    "raw": "{\"ok\":true}",
+    "seq": "h1"
+  },
+  "3": {
+    "status": 401,
+    "raw": "{\"error\":\"E001\",\"mensaje\":\"no autorizado\"}",
+    "seq": "h1"
+  },
+  "4": {
+    "status": 400,
+    "raw": "{\"error\":\"E100\",\"mensaje\":\"json inválido\"}",
+    "seq": "h1"
+  },
+  "5": {
+    "status": 400,
+    "raw": "{\"error\":\"E102\",\"mensaje\":\"falta m\"}",
+    "seq": "h1"
+  },
+  "6": {
+    "status": 400,
+    "raw": "{\"error\":\"E103\",\"mensaje\":\"falta control\"}",
+    "seq": "h1"
+  },
+  "7": {
+    "status": 400,
+    "raw": "{\"error\":\"E104\",\"mensaje\":\"segmento vacío\"}",
+    "seq": "h1"
+  },
+  "8": {
+    "status": 404,
+    "raw": "{\"error\":\"E404\",\"mensaje\":\"ruta desconocida\"}",
+    "seq": "h1"
+  },
+  "9": {
+    "status": 200,
+    "raw": "{\"ok\":true}",
+    "seq": "h2"
+  },
+  "10": {
+    "status": 200,
+    "raw": "{\"pong\":true}",
+    "seq": "h2"
+  },
+  "11": {
+    "status": 200,
+    "raw": "{\"pong\":true}",
+    "seq": "h2"
+  },
+  "12": {
+    "status": 400,
+    "raw": "{\"error\":\"E302\",\"mensaje\":\"aridad inválida\"}",
+    "seq": "h2"
+  },
+  "13": {
+    "status": 404,
+    "raw": "{\"error\":\"E401\",\"mensaje\":\"cuenta inexistente\"}",
+    "seq": "h2"
+  },
+  "14": {
+    "status": 400,
+    "raw": "{\"error\":\"E202\",\"mensaje\":\"control inválido\"}",
+    "seq": "h2"
+  },
+  "15": {
+    "status": 400,
+    "raw": "{\"error\":\"E201\",\"mensaje\":\"control mal formado\"}",
+    "seq": "h2"
+  },
+  "16": {
+    "status": 400,
+    "raw": "{\"error\":\"E301\",\"mensaje\":\"comando desconocido \"}",
+    "seq": "h2"
+  },
+  "17": {
+    "status": 400,
+    "raw": "{\"error\":\"E301\",\"mensaje\":\"comando desconocido \",\"sugerencia\":\"PING\"}",
+    "seq": "h2"
+  },
+  "18": {
+    "status": 400,
+    "raw": "{\"error\":\"E302\",\"mensaje\":\"aridad inválida\"}",
+    "seq": "h2"
+  },
+  "19": {
+    "status": 409,
+    "raw": "{\"error\":\"E520\",\"mensaje\":\"operación destructiva: detiene el servicio; reenvía con confirmación\"}",
+    "seq": "h2"
+  },
+  "20": {
+    "status": 200,
+    "raw": "{\"ok\":true}",
+    "seq": "h3"
+  },
+  "21": {
+    "status": 201,
+    "raw": "{\"cuentaId\":\"AC-0001\"}",
+    "seq": "h3"
+  },
+  "22": {
+    "status": 201,
+    "raw": "{\"cuentaId\":\"AC-0002\"}",
+    "seq": "h3"
+  },
+  "23": {
+    "status": 200,
+    "raw": "{\"cuenta_id\":\"AC-0001\",\"saldo\":0}",
+    "seq": "h3"
+  },
+  "24": {
+    "status": 200,
+    "raw": "{\"status\":\"recieved\",\"operacionId\":\"OP-0001\"}",
+    "seq": "h3"
+  },
+  "25": {
+    "status": 200,
+    "raw": "{\"status\":\"recieved\",\"operacionId\":\"OP-0002\"}",
+    "seq": "h3"
+  },
+  "26": {
+    "status": 422,
+    "raw": "{\"error\":\"E506\",\"mensaje\":\"límite excedido\"}",
+    "seq": "h3"
+  },
+  "27": {
+    "status": 200,
+    "raw": "{\"status\":\"recieved\",\"operacionId\":\"OP-0003\"}",
+    "seq": "h3"
+  },
+  "28": {
+    "status": 400,
+    "raw": "{\"error\":\"E303\",\"mensaje\":\"monto inválido\"}",
+    "seq": "h3"
+  },
+  "29": {
+    "status": 400,
+    "raw": "{\"error\":\"E304\",\"mensaje\":\"origen y destino iguales\"}",
+    "seq": "h3"
+  },
+  "30": {
+    "status": 404,
+    "raw": "{\"error\":\"E401\",\"mensaje\":\"cuenta inexistente\"}",
+    "seq": "h3"
+  },
+  "31": {
+    "status": 200,
+    "raw": "{\"ok\":true,\"anulada\":\"OP-0002\"}",
+    "seq": "h3"
+  },
+  "32": {
+    "status": 200,
+    "raw": "{\"ok\":false,\"motivo\":\"ya anulada\"}",
+    "seq": "h3"
+  },
+  "33": {
+    "status": 404,
+    "raw": "{\"error\":\"E402\",\"mensaje\":\"operación inexistente\"}",
+    "seq": "h3"
+  },
+  "34": {
+    "status": 200,
+    "raw": "{\"cuenta_id\":\"AC-0001\",\"saldo\":599999}",
+    "seq": "h3"
+  },
+  "35": {
+    "status": 200,
+    "raw": "{\"cuenta_id\":\"AC-0002\",\"saldo\":-99999}",
+    "seq": "h3"
+  },
+  "36": {
+    "status": 200,
+    "raw": "{\"ok\":true}",
+    "seq": "h4"
+  },
+  "37": {
+    "status": 201,
+    "raw": "{\"cuentaId\":\"AC-0001\"}",
+    "seq": "h4"
+  },
+  "38": {
+    "status": 201,
+    "raw": "{\"cuentaId\":\"AC-0002\"}",
+    "seq": "h4"
+  },
+  "39": {
+    "status": 200,
+    "raw": "{\"status\":\"recieved\",\"operacionId\":\"OP-0001\"}",
+    "seq": "h4"
+  },
+  "40": {
+    "status": 422,
+    "raw": "{\"error\":\"E506\",\"mensaje\":\"límite excedido\"}",
+    "seq": "h4"
+  },
+  "41": {
+    "status": 422,
+    "raw": "{\"error\":\"E506\",\"mensaje\":\"límite excedido\"}",
+    "seq": "h4"
+  },
+  "42": {
+    "status": 422,
+    "raw": "{\"error\":\"E506\",\"mensaje\":\"límite excedido\"}",
+    "seq": "h4"
+  },
+  "43": {
+    "status": 409,
+    "raw": "{\"error\":\"E510\",\"mensaje\":\"cuenta bloqueada\"}",
+    "seq": "h4"
+  },
+  "44": {
+    "status": 200,
+    "raw": "{\"status\":\"recieved\",\"operacionId\":\"OP-0002\"}",
+    "seq": "h4"
+  },
+  "45": {
+    "status": 200,
+    "raw": "{\"status\":\"recieved\",\"operacionId\":\"OP-0003\"}",
+    "seq": "h4"
+  }
+}
